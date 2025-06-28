@@ -12,7 +12,8 @@ def manage_instances(action):
             {
                 'Name': 'tag:Name',
                 'Values': [
-                    'keycloak-server'  # Change this to your specific instance name tag
+                    'base-server',
+                    'keycloak-server'
                 ]
             },
             {

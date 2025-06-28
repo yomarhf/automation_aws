@@ -31,7 +31,7 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "push" ]]; then
             # When triggered by push, default to a specific operation for testing
-            echo "operation=start" >> $GITHUB_OUTPUT
+            echo "operation=stop" >> $GITHUB_OUTPUT
             echo "Running in test mode with push trigger, defaulting to stop operation"
           else
             # For scheduled runs, determine operation based on current hour (UTC)
