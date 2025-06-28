@@ -1,19 +1,51 @@
-name: EC2 Scheduler Shutdown
+name: EC2 Instance Scheduler
 
 on:
+  schedule:
+    - cron: '0 10 * * 1-6'  # Monday to Saturday at 5:00 AM Lima time (10:00 AM UTC) - for startup
+    - cron: '0 2 * * 2-6,0'   # Tuesday to Saturday and Sunday at 2:00 AM UTC (9:00 PM/21:00 previous day Lima time) - for shutdown
   push:
     branches:
       - main
-
 jobs:
-  ec2_scheduler_shutdown:
+  manage_ec2_instances:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependency
+      - name: Install dependencies
         run: |
           sudo apt install -y python3 python3-pip
-          pip3 install awscli
-          pip3 install boto3
+          pip3 install awscli boto3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Determine operation based on schedule
+        id: determine-operation
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            # When triggered by push, default to a specific operation for testing
+            echo "operation=stop" >> $GITHUB_OUTPUT
+            echo "Running in test mode with push trigger, defaulting to stop operation"
+          else
+            # For scheduled runs, determine operation based on current hour (UTC)
+            HOUR=$(date -u +%H)
+            if [[ $HOUR -eq 10 ]]; then
+              # If it's 10 AM UTC (5 AM Lima time), start instances
+              echo "operation=start" >> $GITHUB_OUTPUT
+              echo "Current time is around 5 AM Lima time (10 AM UTC), starting instances"
+            else
+              # Otherwise (2 AM UTC, 9 PM previous day Lima time), stop instances
+              echo "operation=stop" >> $GITHUB_OUTPUT
+              echo "Current time is around 9 PM Lima time (2 AM UTC), stopping instances"
+            fi
+          fi
+
+      - name: Manage EC2 instances
+        run: python3 manage_ec2.py ${{ steps.determine-operation.outputs.operation }} >> $GITHUB_STEP_SUMMARY
