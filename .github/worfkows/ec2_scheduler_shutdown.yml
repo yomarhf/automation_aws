@@ -1,0 +1,19 @@
+name: EC2 Scheduler Shutdown
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  ec2_scheduler_shutdown:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependency
+        run: |
+          sudo apt install -y python3 python3-pip
+          pip3 install awscli
+          pip3 install boto3
