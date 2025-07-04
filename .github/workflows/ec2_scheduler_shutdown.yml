@@ -2,7 +2,7 @@ name: EC2 Instance Scheduler
 
 on:
   schedule:
-    - cron: '0 10 * * 1-6'  # Monday to Saturday at 5:00 AM Lima time (10:00 AM UTC) - for startup
+    - cron: '0 11 * * 1-6'  # Monday to Saturday at 6:00 AM Lima time (10:00 AM UTC) - for startup
     - cron: '0 2 * * 2-6,0'   # Tuesday to Saturday and Sunday at 2:00 AM UTC (9:00 PM/21:00 previous day Lima time) - for shutdown
   push:
     branches:
